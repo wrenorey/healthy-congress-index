@@ -1,0 +1,80 @@
+{
+    "amendment": {
+        "actions": {
+            "count": 8,
+            "url": "https://api.congress.gov/v3/amendment/118/samdt/1841/actions?format=json"
+        },
+        "amendedBill": {
+            "congress": 118,
+            "number": "7888",
+            "originChamber": "House",
+            "originChamberCode": "H",
+            "title": "Reforming Intelligence and Securing America Act",
+            "type": "HR",
+            "updateDateIncludingText": "2026-03-13",
+            "url": "https://api.congress.gov/v3/bill/118/hr/7888?format=json"
+        },
+        "chamber": "Senate",
+        "congress": 118,
+        "cosponsors": {
+            "count": 2,
+            "countIncludingWithdrawnCosponsors": 2,
+            "url": "https://api.congress.gov/v3/amendment/118/samdt/1841/cosponsors?format=json"
+        },
+        "latestAction": {
+            "actionDate": "2024-04-19",
+            "links": [
+                {
+                    "name": "Record Vote Number: 148",
+                    "url": "https://www.senate.gov/legislative/LIS/roll_call_votes/vote1182/vote_118_2_00148.htm"
+                },
+                {
+                    "name": "SA 1841",
+                    "url": "https://www.congress.gov/amendment/118th-congress/senate-amendment/1841"
+                }
+            ],
+            "text": "Amendment SA 1841 not agreed to in Senate by Yea-Nay Vote. 42 - 50. Record Vote Number: 148."
+        },
+        "number": "1841",
+        "onBehalfOfSponsor": [
+            {
+                "bioguideId": "D000563",
+                "firstName": "Richard",
+                "fullName": "Sen. Durbin, Richard J. [D-IL]",
+                "lastName": "Durbin",
+                "party": "D",
+                "state": "IL",
+                "type": "Proposed on behalf of",
+                "url": "https://api.congress.gov/v3/member/D000563?format=json"
+            }
+        ],
+        "proposedDate": "2024-04-19T04:00:00Z",
+        "purpose": "To prohibit warrantless access to the communications and other information of United States persons.",
+        "sponsors": [
+            {
+                "bioguideId": "D000563",
+                "firstName": "Richard",
+                "fullName": "Sen. Durbin, Richard J. [D-IL]",
+                "lastName": "Durbin",
+                "middleName": "J.",
+                "party": "D",
+                "state": "IL",
+                "url": "https://api.congress.gov/v3/member/D000563?format=json"
+            }
+        ],
+        "submittedDate": "2024-04-19T04:00:00Z",
+        "textVersions": {
+            "count": 2,
+            "url": "https://api.congress.gov/v3/amendment/118/samdt/1841/text?format=json"
+        },
+        "type": "SAMDT",
+        "updateDate": "2026-03-13T11:08:20Z"
+    },
+    "request": {
+        "amendmentNumber": "1841",
+        "amendmentType": "samdt",
+        "congress": "118",
+        "contentType": "application/json",
+        "format": "json"
+    }
+}

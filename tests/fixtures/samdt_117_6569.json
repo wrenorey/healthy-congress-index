@@ -1,0 +1,70 @@
+{
+    "amendment": {
+        "actions": {
+            "count": 6,
+            "url": "https://api.congress.gov/v3/amendment/117/samdt/6569/actions?format=json"
+        },
+        "amendedAmendment": {
+            "congress": 117,
+            "number": "6558",
+            "purpose": "To eliminate discrimination and promote women's health and economic security by ensuring reasonable workplace accommodations for workers whose ability to perform the functions of a job are limited by pregnancy, childbirth, or a related medical condition.",
+            "type": "SAMDT",
+            "updateDate": "2022-12-23T05:31:45Z",
+            "url": "https://api.congress.gov/v3/amendment/117/samdt/6558?format=json"
+        },
+        "amendedBill": {
+            "congress": 117,
+            "number": "2617",
+            "originChamber": "House",
+            "originChamberCode": "H",
+            "title": "Consolidated Appropriations Act, 2023",
+            "type": "HR",
+            "updateDateIncludingText": "2026-04-22",
+            "url": "https://api.congress.gov/v3/bill/117/hr/2617?format=json"
+        },
+        "chamber": "Senate",
+        "congress": 117,
+        "latestAction": {
+            "actionDate": "2022-12-22",
+            "links": [
+                {
+                    "name": "Record Vote Number: 415",
+                    "url": "https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00415.htm"
+                },
+                {
+                    "name": "SA 6569",
+                    "url": "https://www.congress.gov/amendment/117th-congress/senate-amendment/6569"
+                }
+            ],
+            "text": "Amendment SA 6569, under the order of 12/22/22, not having achieved 60 votes in the affirmative, was not agreed to in Senate by Yea-Nay Vote. 40 - 57. Record Vote Number: 415. "
+        },
+        "number": "6569",
+        "proposedDate": "2022-12-22T05:00:00Z",
+        "purpose": "To eliminate a waiver of State immunity.",
+        "sponsors": [
+            {
+                "bioguideId": "B001310",
+                "firstName": "Mike",
+                "fullName": "Sen. Braun, Mike [R-IN]",
+                "lastName": "Braun",
+                "party": "R",
+                "state": "IN",
+                "url": "https://api.congress.gov/v3/member/B001310?format=json"
+            }
+        ],
+        "submittedDate": "2022-12-20T05:00:00Z",
+        "textVersions": {
+            "count": 1,
+            "url": "https://api.congress.gov/v3/amendment/117/samdt/6569/text?format=json"
+        },
+        "type": "SAMDT",
+        "updateDate": "2022-12-29T15:01:19Z"
+    },
+    "request": {
+        "amendmentNumber": "6569",
+        "amendmentType": "samdt",
+        "congress": "117",
+        "contentType": "application/json",
+        "format": "json"
+    }
+}

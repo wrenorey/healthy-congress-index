@@ -1,0 +1,122 @@
+{
+    "actions": [
+        {
+            "actionDate": "2024-04-19",
+            "recordedVotes": [
+                {
+                    "chamber": "Senate",
+                    "congress": 118,
+                    "date": "2024-04-20T03:21:02Z",
+                    "rollNumber": 148,
+                    "sessionNumber": 2,
+                    "url": "https://www.senate.gov/legislative/LIS/roll_call_votes/vote1182/vote_118_2_00148.xml"
+                }
+            ],
+            "sourceSystem": {
+                "code": 0,
+                "name": "Senate"
+            },
+            "text": "Amendment SA 1841 not agreed to in Senate by Yea-Nay Vote. 42 - 50. Record Vote Number: 148.",
+            "type": "Floor"
+        },
+        {
+            "actionDate": "2024-04-19",
+            "sourceSystem": {
+                "code": 0,
+                "name": "Senate"
+            },
+            "text": "Amendment SA 1841 proposed by Senator Durbin. (consideration: CR S2925-2927) To prohibit warrantless access to the communications and other information of United States persons.",
+            "type": "Floor"
+        },
+        {
+            "actionCode": "Intro-S",
+            "actionDate": "2024-04-19",
+            "sourceSystem": {
+                "code": 9,
+                "name": "Library of Congress"
+            },
+            "type": "IntroReferral"
+        },
+        {
+            "actionCode": "95000",
+            "actionDate": "2024-04-19",
+            "recordedVotes": [
+                {
+                    "chamber": "Senate",
+                    "congress": 118,
+                    "date": "2024-04-20T03:21:02Z",
+                    "rollNumber": 148,
+                    "sessionNumber": 2,
+                    "url": "https://www.senate.gov/legislative/LIS/roll_call_votes/vote1182/vote_118_2_00148.xml"
+                }
+            ],
+            "sourceSystem": {
+                "code": 9,
+                "name": "Library of Congress"
+            },
+            "text": "Senate amendment not agreed to: Amendment SA 1841 not agreed to in Senate by Yea-Nay Vote. 42 - 50. Record Vote Number: 148.",
+            "type": "Floor"
+        },
+        {
+            "actionCode": "97000",
+            "actionDate": "2024-04-19",
+            "recordedVotes": [
+                {
+                    "chamber": "Senate",
+                    "congress": 118,
+                    "date": "2024-04-20T03:21:02Z",
+                    "rollNumber": 148,
+                    "sessionNumber": 2,
+                    "url": "https://www.senate.gov/legislative/LIS/roll_call_votes/vote1182/vote_118_2_00148.xml"
+                }
+            ],
+            "sourceSystem": {
+                "code": 9,
+                "name": "Library of Congress"
+            },
+            "text": "Roll call votes on amendments in Senate: Amendment SA 1841 not agreed to in Senate by Yea-Nay Vote. 42 - 50. Record Vote Number: 148.",
+            "type": "Floor"
+        },
+        {
+            "actionCode": "93000",
+            "actionDate": "2024-04-19",
+            "sourceSystem": {
+                "code": 9,
+                "name": "Library of Congress"
+            },
+            "text": "Senate amendment proposed (on the floor): Amendment SA 1841 proposed by Senator Durbin.",
+            "type": "Floor"
+        },
+        {
+            "actionCode": "91000",
+            "actionDate": "2024-04-19",
+            "sourceSystem": {
+                "code": 9,
+                "name": "Library of Congress"
+            },
+            "text": "Senate amendment submitted",
+            "type": "Floor"
+        },
+        {
+            "actionCode": "91000",
+            "actionDate": "2024-04-19",
+            "sourceSystem": {
+                "code": 9,
+                "name": "Library of Congress"
+            },
+            "text": "Senate amendment submitted",
+            "type": "Floor"
+        }
+    ],
+    "pagination": {
+        "count": 8
+    },
+    "request": {
+        "amendmentNumber": "1841",
+        "amendmentType": "samdt",
+        "amendmentUrl": "https://api.congress.gov/v3/amendment/118/samdt/1841?format=json",
+        "congress": "118",
+        "contentType": "application/json",
+        "format": "json"
+    }
+}

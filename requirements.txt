@@ -1,0 +1,8 @@
+pandas
+requests
+lxml
+# only for the original browser-based scrapers (scrape_amendments, working days)
+beautifulsoup4
+selenium
+# tests
+pytest
