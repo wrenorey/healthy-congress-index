@@ -63,7 +63,7 @@ def _add_classification(df):
 
 API = "https://api.congress.gov/v3"
 CONSIDERED_CODES = {"94000", "95000"}  # Senate amendment agreed to / not agreed to
-MIN_INTERVAL = 3600 / 4900  # seconds between request starts: stays under the API's 5,000 per hour
+DEFAULT_HOURLY_LIMIT = 5000  # used until the API reports the key's actual limit (X-RateLimit-Limit)
 CACHE_DIR = Path(__file__).resolve().parent / ".api_cache"
 KEY_FILE = Path(__file__).resolve().parent.parent / ".congress_api_key"  # git-ignored
 BILL_TYPES = {"HR": "H.R.", "S": "S.", "HRES": "H.Res.", "SRES": "S.Res.", "HJRES": "H.J.Res.",
@@ -87,14 +87,18 @@ class _Api:
         self.session = requests.Session()
         self.calls = 0
         self.last_start = 0.0
+        self.min_interval = 3600 / (0.98 * DEFAULT_HOURLY_LIMIT)  # seconds between request starts
 
     def get(self, path, **params):
         params.update(api_key=self.api_key, format="json")
         for _ in range(10):
-            time.sleep(max(0.0, self.last_start + MIN_INTERVAL - time.monotonic()))
+            time.sleep(max(0.0, self.last_start + self.min_interval - time.monotonic()))
             self.last_start = time.monotonic()
             response = self.session.get(f"{API}/{path}", params=params, timeout=60)
             self.calls += 1
+            limit = response.headers.get("X-RateLimit-Limit", "")
+            if limit.isdigit() and int(limit) > 0:  # pace to just under this key's hourly limit
+                self.min_interval = 3600 / (0.98 * int(limit))
             if response.status_code == 429 or response.status_code >= 500:
                 wait = int(response.headers.get("Retry-After", 60))
                 print(f"  API returned {response.status_code}; waiting {wait}s")
@@ -193,8 +197,9 @@ def fetch_amendments(start_date, end_date=None, api_key=None):
     """Senate amendments considered with a latest action between start_date and end_date
     (MM/DD/YYYY, inclusive; end defaults to today), from the Congress.gov API.
 
-    The first run for a Congress makes one request per Senate amendment (about 45 minutes per
-    Congress); responses are cached in senate_amendments/.api_cache, so later runs are quick.
+    The first run for a Congress makes one request per Senate amendment (3,000-7,000 requests, or
+    roughly 30-60 minutes); responses are cached in senate_amendments/.api_cache, so later runs only
+    fetch what changed and take a minute or two.
     """
     api_key = api_key or os.environ.get("CONGRESS_API_KEY")
     if not api_key and KEY_FILE.exists():
