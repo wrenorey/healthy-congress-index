@@ -97,6 +97,8 @@ def test_fetch_amendments_end_to_end_with_fake_api(monkeypatch, tmp_path):
     """Runs the whole fetch (listing, detail, actions, caching, filtering) against canned responses."""
     in_window = amendment("samdt_118_1841")                     # latest action 2024-04-19, code 95000
     outside = dict(in_window, number="1840", latestAction={"actionDate": "2024-03-01", "text": "x"})
+    never_proposed = {k: v for k, v in in_window.items() if k != "proposedDate"}
+    never_proposed.update(number="1839", latestAction={"actionDate": "2024-04-18", "text": "submitted"})
     actions = json.loads((FIXTURES / "samdt_118_1841_actions.json").read_text())["actions"]
     requests_made = []
 
@@ -109,24 +111,26 @@ def test_fetch_amendments_end_to_end_with_fake_api(monkeypatch, tmp_path):
             self.calls += 1
             if path == "amendment/118/samdt":
                 assert params["fromDateTime"] == "2024-04-01T00:00:00Z"
-                items = [{"number": "1841", "updateDate": "u1"}, {"number": "1840", "updateDate": "u1"}]
-                return {"amendments": items, "pagination": {"count": 2}}
+                items = [{"number": n, "updateDate": "u1"} for n in ("1841", "1840", "1839")]
+                return {"amendments": items, "pagination": {"count": 3}}
             if path == "amendment/118/samdt/1841":
                 return {"amendment": in_window}
             if path == "amendment/118/samdt/1840":
                 return {"amendment": outside}
+            if path == "amendment/118/samdt/1839":
+                return {"amendment": never_proposed}
             if path == "amendment/118/samdt/1841/actions":
                 return {"actions": actions, "pagination": {"count": len(actions)}}
             raise AssertionError(f"unexpected request {path}")
 
     monkeypatch.setattr(ah, "_Api", FakeApi)
     monkeypatch.setattr(ah, "CACHE_DIR", tmp_path)
-    monkeypatch.setattr(ah, "PAUSE", 0)
 
     df = ah.fetch_amendments("04/01/2024", "04/30/2024", api_key="test")
     assert list(df["S.Amdt.No"]) == ["S.Amdt.1841"]
     assert list(df.columns) == ah.COLUMNS
-    assert requests_made.count("amendment/118/samdt/1840/actions") == 0  # outside the window
+    assert "amendment/118/samdt/1840/actions" not in requests_made  # latest action outside the window
+    assert "amendment/118/samdt/1839/actions" not in requests_made  # never proposed on the floor
 
     requests_made.clear()
     ah.fetch_amendments("04/01/2024", "04/30/2024", api_key="test")

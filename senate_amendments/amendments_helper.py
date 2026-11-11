@@ -63,7 +63,7 @@ def _add_classification(df):
 
 API = "https://api.congress.gov/v3"
 CONSIDERED_CODES = {"94000", "95000"}  # Senate amendment agreed to / not agreed to
-PAUSE = 0.75  # seconds between requests, to stay under the API's 5,000 requests per hour
+MIN_INTERVAL = 3600 / 4900  # seconds between request starts: stays under the API's 5,000 per hour
 CACHE_DIR = Path(__file__).resolve().parent / ".api_cache"
 KEY_FILE = Path(__file__).resolve().parent.parent / ".congress_api_key"  # git-ignored
 BILL_TYPES = {"HR": "H.R.", "S": "S.", "HRES": "H.Res.", "SRES": "S.Res.", "HJRES": "H.J.Res.",
@@ -86,10 +86,13 @@ class _Api:
         self.api_key = api_key
         self.session = requests.Session()
         self.calls = 0
+        self.last_start = 0.0
 
     def get(self, path, **params):
         params.update(api_key=self.api_key, format="json")
         for _ in range(10):
+            time.sleep(max(0.0, self.last_start + MIN_INTERVAL - time.monotonic()))
+            self.last_start = time.monotonic()
             response = self.session.get(f"{API}/{path}", params=params, timeout=60)
             self.calls += 1
             if response.status_code == 429 or response.status_code >= 500:
@@ -98,9 +101,29 @@ class _Api:
                 time.sleep(wait)
                 continue
             response.raise_for_status()
-            time.sleep(PAUSE)
             return response.json()
         response.raise_for_status()
+
+
+def _list_amendments(api, congress, start):
+    """Numbers and update dates of a Congress's Senate amendments updated on or after start.
+    An amendment whose latest action is on or after start was updated on or after it, so this
+    skips nothing we need. Records can move between pages while they are being updated, so the
+    listing is repeated until it has as many distinct amendments as the API reports."""
+    for _ in range(3):
+        listing, offset = {}, 0
+        while True:
+            page = api.get(f"amendment/{congress}/samdt", limit=250, offset=offset,
+                           fromDateTime=f"{start.isoformat()}T00:00:00Z")
+            for item in page["amendments"]:
+                listing[item["number"]] = item["updateDate"]
+            offset += 250
+            if offset >= page["pagination"]["count"]:
+                break
+        if len(listing) >= page["pagination"]["count"]:
+            break
+        print(f"  listing changed while paging ({len(listing)} of {page['pagination']['count']}); retrying")
+    return listing
 
 
 def _cached_amendment(api, congress, number, update_date, need_actions):
@@ -185,29 +208,24 @@ def fetch_amendments(start_date, end_date=None, api_key=None):
 
     rows = []
     for congress in range(_congress_of(start), _congress_of(end) + 1):
-        # An amendment whose latest action is on or after the start date was updated on or after it.
-        listing, offset = [], 0
-        while True:
-            page = api.get(f"amendment/{congress}/samdt", limit=250, offset=offset,
-                           fromDateTime=f"{start.isoformat()}T00:00:00Z")
-            listing += page["amendments"]
-            offset += 250
-            if offset >= page["pagination"]["count"]:
-                break
+        listing = _list_amendments(api, congress, start)
         print(f"{_ordinal(congress)} Congress: checking {len(listing)} Senate amendments")
 
         details, considered = {}, []
-        for i, item in enumerate(listing, 1):
-            record = _cached_amendment(api, congress, item["number"], item["updateDate"], need_actions=False)
-            detail = record["detail"]
+        for i, (number, update_date) in enumerate(listing.items(), 1):
+            detail = _cached_amendment(api, congress, number, update_date, need_actions=False)["detail"]
             details[detail["number"]] = detail
             action_date = (detail.get("latestAction") or {}).get("actionDate")
-            if action_date and start <= date.fromisoformat(action_date) <= end:
-                record = _cached_amendment(api, congress, item["number"], item["updateDate"], need_actions=True)
+            # Only amendments proposed on the floor can be agreed to or not agreed to, so only those
+            # need their action history checked for the 94000/95000 codes. (Most amendments are
+            # submitted but never proposed.)
+            if (detail.get("proposedDate") and action_date
+                    and start <= date.fromisoformat(action_date) <= end):
+                record = _cached_amendment(api, congress, number, update_date, need_actions=True)
                 if any(a.get("actionCode") in CONSIDERED_CODES for a in record["actions"]):
                     considered.append(detail)
             if i % 250 == 0:
-                print(f"  {i}/{len(listing)} checked, {len(considered)} considered so far")
+                print(f"  {i}/{len(listing)} checked, {len(considered)} considered so far ({api.calls} requests)")
 
         for detail in considered:
             number = (detail.get("amendedAmendment") or {}).get("number")
