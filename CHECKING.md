@@ -87,7 +87,7 @@ This checks the per-quarter counts against the CSV and against what was publishe
    | Action Type | UC, VV, and RCV |
 
    The summary file lists quarters across the top, so it's the pivot table turned on its side.
-3. For each measure in the Budget Resolutions category, confirm on Congress.gov that it sets the congressional budget. The category only checks for "Con" in the measure's name, so it would also catch other concurrent resolutions. The README lists three amendments in the 118th Congress where that happened.
+3. For each measure in the Budget Resolutions category, confirm on Congress.gov that it sets the congressional budget, and list any that don't.
 4. Set up `amendments_2022-01-01_to_2024-12-31.csv` the same way and compare it with its summary file. Two things are different in this file:
    - Three rows have the Action Type `INPUT BY HAND`: S.Amdt.5027, S.Amdt.5193, and S.Amdt.3292. They count in Total Amendments but not in UC, VV, or RCV, so the Action Type pivot table shows them in a column of their own.
    - The rows with a blank Sponsor Party are Sanders and former Sen. Kyrsten Sinema, both independents.
@@ -102,7 +102,7 @@ This counts legislative cloture votes straight from the Senate's page.
 3. Count each `I` and each `F` as one vote. A reconsidered motion shows two votes on one row. Count both.
 4. Compare your counts with the `Legislation-Votes`, `Legislation-Voted Inv`, and `Legislation-Votes Failed` rows of `cloture/cloture_summary_119.csv`. Its columns are quarters by filing date, such as Q1-2026. The Motion to Proceed rows are part of Legislation, so you don't need them.
 
-The executive resolutions (S.Res.) that authorize en bloc consideration of nominations count as legislation for now, as the README explains. Their subject begins "Executive resolution authorizing the en bloc consideration." If your quarter has any, note how many, because that decision may change.
+Count the executive resolutions (S.Res.) that authorize en bloc consideration of nominations as legislation, as the README explains. Their subject begins "Executive resolution authorizing the en bloc consideration."
 
 ## 5. Cloture: Special Cases
 
