@@ -1,6 +1,7 @@
 pandas
 requests
 lxml
+ipykernel  # to run the notebooks in VS Code or Jupyter
 # only for the original browser-based scrapers (scrape_amendments, working days)
 beautifulsoup4
 selenium
