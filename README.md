@@ -42,6 +42,8 @@ The Congress.gov API's list of a Congress's amendments shows each one's latest a
 - Resolutions amended: contains Res
 - Bills amended: everything else, including treaties
 
+Because the check is only for "Con," an amendment to any concurrent resolution counts as a budget resolution amendment. This has happened three times, all in the 118th Congress and all included in the published numbers: two amendments to S.Con.Res.7, on the detention of Vladimir Kara-Murza, and one to S.Con.Res.43, on Veterans of Foreign Wars of the United States Day. Every concurrent resolution amended so far in the 119th Congress is a budget resolution.
+
 **Majority and minority** come from the sponsor's party and the party that controlled the Senate, which is listed by Congress in `SENATE_MAJORITY` in `amendments_helper.py`. Independents count with the party they caucus with (Democrats).
 
 **To run:**
@@ -49,8 +51,8 @@ The Congress.gov API's list of a Congress's amendments shows each one's latest a
 1. Get a free key at https://api.congress.gov/sign-up/.
 2. Save the key in a file named `.congress_api_key` at the top of this repo. The file is git-ignored. Alternatively, set the `CONGRESS_API_KEY` environment variable.
 3. Open `senate_amendments/amendments.ipynb`, set `START` and `END`, and run all cells.
-4. Check the rows marked `INPUT BY HAND` on Congress.gov and record any fixes in `OVERRIDES`. Until they are fixed, they count toward totals but not toward UC, VV, or RCV.
-5. `quarterly_summary` gives per-quarter counts for the "Senate Amendments Considered" sheet. The sheet is cumulative within each Congress, except for the budget resolution row.
+4. Check the rows marked `INPUT BY HAND` on Congress.gov and record any fixes in `OVERRIDES`, which saves the CSV again with the fixes. Until they are fixed, they count toward totals but not toward UC, VV, or RCV.
+5. `quarterly_summary` gives per-quarter counts for the "Senate Amendments Considered" sheet, and the notebook saves them as `amendments_summary_{start}_to_{end}.csv`. The sheet is cumulative within each Congress, except for the budget resolution row.
 6. At the start of each Congress, add it to `SENATE_MAJORITY`.
 
 **Reading the CSVs:** Use `pd.read_csv(path, keep_default_na=False)`. Otherwise, pandas reads the outcome code `NA` as a missing value. `Sponsor Party` is R or D and is blank for independents, as in the original scraper. `quarterly_summary` handles independents.
@@ -59,6 +61,7 @@ The Congress.gov API's list of a Congress's amendments shows each one's latest a
 
 - `amendments_2022-01-01_to_2024-12-31.csv` covers the 117th Congress's second session and the 118th Congress, and reproduces the published table.
 - `amendments_2025-01-01_to_2026-11-12.csv` is the 119th Congress through November 12, 2026.
+- Each has a matching `amendments_summary_...` file with its per-quarter counts.
 
 `scrape_amendments` is the original Congress.gov scraper, kept as a fallback. It opens a visible Chrome window, because Congress.gov blocks headless browsers. Its output differs from the API's in three cosmetic ways:
 
@@ -72,7 +75,7 @@ The Congress.gov API's list of a Congress's amendments shows each one's latest a
 
 **Counting rules:**
 
-- **Groups.** A row whose subject mentions "motion to proceed" is a motion to proceed. Otherwise, a measure containing "PN" is a nomination, and everything else is legislation. The Legislation group includes motions to proceed and treaties.
+- **Groups.** A measure containing "PN" is a nomination, even when the subject says "motion to proceed," as in the original summaries. Otherwise, a row whose subject mentions "motion to proceed" is a motion to proceed, and everything else is legislation. The Legislation group includes motions to proceed and treaties.
 - **En bloc nominations.** Since 2025, the Senate has listed cloture on these with Measure "Various" and the PN numbers in the subject, and they count as nominations. The executive resolutions (S.Res.) that authorize en bloc consideration count as legislation, as S.Res.50 did in the published numbers for the 116th Congress.
 - **Reconsidered motions** appear on one row of the Senate's table, with two vote dates, votes, and results. They are split into the original vote and a reconsideration vote.
 - **Motions filed** is the number of rows minus the number of reconsiderations.
@@ -99,7 +102,7 @@ The Senate's page can lag the floor by several days, so rerun after a quarter cl
 
 ## Validation (November 2026)
 
-To check this work independently, follow the steps in [CHECKING.md](CHECKING.md).
+To check this work by hand, without running any code, follow the steps in [CHECKING.md](CHECKING.md).
 
 **Cloture.** Both checks below are pinned in the tests, using copies of the Senate's 116th and 117th Congress tables.
 

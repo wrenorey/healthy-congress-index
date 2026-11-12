@@ -126,6 +126,8 @@ def test_vote_and_filing_date_formats():
 def test_legislation_type():
     assert ch.legislation_type("S.1", "Some Act, motion to proceed") == "Motion to Proceed"
     assert ch.legislation_type("PN78-12", "Nominee Eric S. Lander") == "Nomination"
+    # A motion to proceed to a nomination is still a nomination: the original summaries grouped by Measure.
+    assert ch.legislation_type("PN1181-7", "Judicial nominee Anna St. John, motion to proceed") == "Nomination"
     assert ch.legislation_type("Various", "En bloc consideration of certain nominations: A (PN25-28)") == "Nomination"
     assert ch.legislation_type("H.R.4350", "National Defense Authorization Act") == "Legislation"
     assert ch.legislation_type("Treaty Doc. 117-3", "NATO accession") == "Legislation"
@@ -145,6 +147,8 @@ PUBLISHED_AMENDMENTS = {  # HCI full data tables; cumulative within a Congress e
     "Minority": [157, 169, 194, 229, 11, 27, 53, 81, 93, 99, 105, 121],
     "Bills Amended": [59, 79, 100, 145, 11, 31, 38, 52, 68, 80, 97, 133],
     "Amdts Amended": [79, 79, 99, 117, 0, 0, 33, 72, 73, 73, 73, 73],
+    # All three are amendments to non-budget concurrent resolutions (118th S.Con.Res.7 and S.Con.Res.43);
+    # the category only checks for "Con". See the README.
     "Budget Resolutions": [0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1],
 }
 
@@ -161,6 +165,15 @@ def test_amendments_reproduce_published_hci_numbers():
             s118 = pd.Series(per_quarter[4:]).cumsum()
             values = list(s117) + list(s118)
         assert values == PUBLISHED_AMENDMENTS[row], row
+
+
+@pytest.mark.parametrize("period", ["2022-01-01_to_2024-12-31", "2025-01-01_to_2026-11-12"])
+def test_saved_quarterly_counts_match_the_data(period):
+    """CHECKING.md has reviewers compare their own counts with these files, so they must stay in sync."""
+    folder = ROOT / "senate_amendments"
+    df = pd.read_csv(folder / f"amendments_{period}.csv", keep_default_na=False)
+    saved = pd.read_csv(folder / f"amendments_summary_{period}.csv", index_col=0)
+    pd.testing.assert_frame_equal(saved, ah.quarterly_summary(df), check_names=False)
 
 
 def test_quarterly_summary_uses_each_congress_majority():

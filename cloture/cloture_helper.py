@@ -4,8 +4,9 @@ Reads the Senate's cloture tables (https://www.senate.gov/legislative/cloture/{c
 with a plain HTTP request; no browser is needed.
 
 Counting rules (from the original HCI scripts and the Internal HCI Methodology):
-- A row whose Subject mentions "motion to proceed" is a Motion to Proceed; otherwise a row whose
-  Measure contains "PN" is a Nomination; everything else is Legislation. The Legislation group in
+- A row whose Measure contains "PN" is a Nomination, even when its Subject says "motion to proceed"
+  (the original summaries grouped rows by Measure). Otherwise a row whose Subject mentions "motion
+  to proceed" is a Motion to Proceed, and everything else is Legislation. The Legislation group in
   the summary includes motions to proceed (and treaties).
 - A reconsidered motion is listed on one row with two vote dates, votes, and results. It is split
   into two rows: the original vote, and a copy whose Subject keeps the "Vote No. X reconsidered" note.
@@ -84,12 +85,12 @@ def _vote_date(text, filed):
 
 
 def legislation_type(measure, subject):
-    if "motion to proceed" in subject:
-        return "Motion to Proceed"
-    if "PN" in measure:
+    if "PN" in measure:  # even a motion to proceed to a nomination, as in the original summaries
         return "Nomination"
     if not LEGISLATIVE_MEASURE.match(measure) and NOMINATION_IN_SUBJECT.search(subject):
         return "Nomination"  # en bloc nominations: Measure "Various", PN numbers in the Subject
+    if "motion to proceed" in subject:
+        return "Motion to Proceed"
     return "Legislation"
 
 
