@@ -99,6 +99,8 @@ The Senate's page can lag the floor by several days, so rerun after a quarter cl
 
 ## Validation (November 2026)
 
+To check this work independently, follow the steps in [CHECKING.md](CHECKING.md).
+
 **Cloture.** Both checks below are pinned in the tests, using copies of the Senate's 116th and 117th Congress tables.
 
 - Every published legislative cloture number for the 116th Congress and the first session of the 117th Congress is reproduced.
