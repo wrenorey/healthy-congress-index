@@ -1,0 +1,57 @@
+{
+    "amendment": {
+        "actions": {
+            "count": 6,
+            "url": "https://api.congress.gov/v3/amendment/117/samdt/5191/actions?format=json"
+        },
+        "amendedTreaty": {
+            "congress": 117,
+            "treatyNumber": 3,
+            "url": "https://api.congress.gov/v3/treaty/117/3?format=json"
+        },
+        "chamber": "Senate",
+        "congress": 117,
+        "latestAction": {
+            "actionDate": "2022-08-03",
+            "links": [
+                {
+                    "name": "Record Vote Number: 281",
+                    "url": "https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00281.htm"
+                },
+                {
+                    "name": "SA 5191",
+                    "url": "https://www.congress.gov/amendment/117th-congress/senate-amendment/5191"
+                }
+            ],
+            "text": "Amendment SA 5191 not agreed to in Senate by Yea-Nay Vote. 10 - 87. Record Vote Number: 281. "
+        },
+        "number": "5191",
+        "proposedDate": "2022-08-03T04:00:00Z",
+        "purpose": "To provide a reservation to the Protocol.",
+        "sponsors": [
+            {
+                "bioguideId": "P000603",
+                "firstName": "Rand",
+                "fullName": "Sen. Paul, Rand [R-KY]",
+                "lastName": "Paul",
+                "party": "R",
+                "state": "KY",
+                "url": "https://api.congress.gov/v3/member/P000603?format=json"
+            }
+        ],
+        "submittedDate": "2022-08-02T04:00:00Z",
+        "textVersions": {
+            "count": 1,
+            "url": "https://api.congress.gov/v3/amendment/117/samdt/5191/text?format=json"
+        },
+        "type": "SAMDT",
+        "updateDate": "2022-09-06T11:29:15Z"
+    },
+    "request": {
+        "amendmentNumber": "5191",
+        "amendmentType": "samdt",
+        "congress": "117",
+        "contentType": "application/json",
+        "format": "json"
+    }
+}
