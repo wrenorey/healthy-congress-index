@@ -21,8 +21,11 @@ from pathlib import Path
 import pandas as pd
 import requests
 
-COLUMNS = ["Congress", "S.Amdt.No", "Amends", "Sponsor", "Latest Action", "url",
-           "Latest Action Date", "Sponsor Party", "Outcome", "Action Type"]
+ROW_COLUMNS = ["Congress", "S.Amdt.No", "Amends", "Sponsor", "Latest Action", "url",
+               "Latest Action Date", "Measure Title"]
+COLUMNS = ROW_COLUMNS[:-1] + ["Sponsor Party", "Outcome", "Action Type", "Measure Title"]
+# A budget resolution's title sets forth or establishes the congressional budget.
+BUDGET_TITLE = re.compile(r"\b(setting forth|establishing) the congressional budget\b", re.IGNORECASE)
 
 # Party controlling the Senate. Independents caucused with Democrats in all of these Congresses.
 SENATE_MAJORITY = {117: "D", 118: "D", 119: "R"}
@@ -207,6 +210,8 @@ def amendment_row(detail, details_by_number):
         "Latest Action": detail["latestAction"]["text"],
         "url": f"congress.gov/amendment/{_ordinal(congress)}-congress/senate-amendment/{number}",
         "Latest Action Date": action_date.strftime("%m/%d/%y"),
+        # The bill or resolution underneath (for an amendment to an amendment too); blank for treaties.
+        "Measure Title": (detail.get("amendedBill") or {}).get("title") or "",
     }
 
 
@@ -250,7 +255,7 @@ def fetch_amendments(start_date, end_date=None, api_key=None):
         rows += [amendment_row(detail, parents) for detail in details.values()]
 
     print(f"Done: {len(rows)} amendments considered ({api.calls} API requests)")
-    df = pd.DataFrame(rows, columns=COLUMNS[:-3])
+    df = pd.DataFrame(rows, columns=ROW_COLUMNS)
     df = _add_classification(df)
     df["_sort"] = pd.to_datetime(df["Latest Action Date"], format="%m/%d/%y")
     df["_num"] = df["S.Amdt.No"].str.extract(r"(\d+)", expand=False).astype(int)
@@ -262,12 +267,15 @@ def fetch_amendments(start_date, end_date=None, api_key=None):
 # Summary for the HCI full data tables
 # ---------------------------------------------------------------------------------------------
 
-def amends_category(amends):
-    """Mutually exclusive categories, as in the HCI methodology and the published tables."""
+def amends_category(amends, title=""):
+    """Mutually exclusive categories, as in the HCI methodology and the published tables, checked in
+    order. Budget Resolutions takes only a concurrent resolution whose title sets forth or establishes
+    the congressional budget (decided November 2026; the original rule took any concurrent resolution,
+    which put three 118th Congress amendments to other resolutions in that row)."""
     text = str(amends).lower()
     if "amdt" in text:
         return "Amdts Amended"
-    if "con" in text:
+    if "con" in text and BUDGET_TITLE.search(str(title)):
         return "Budget Resolutions"
     if "res" in text:
         return "Resolutions Amended"
@@ -294,7 +302,14 @@ def quarterly_summary(df, independents_caucus_with="D"):
     df["Majority"] = caucus == majority
     df["Minority"] = caucus.notna() & (caucus != majority)
 
-    df["Category"] = df["Amends"].map(amends_category)
+    if "Measure Title" in df:
+        titles = df["Measure Title"]
+    elif df["Amends"].str.contains("Con.Res.", regex=False).any():
+        raise ValueError("Telling a budget resolution from another concurrent resolution needs the Measure "
+                         "Title column, which fetch_amendments writes. Fetch the data again.")
+    else:
+        titles = [""] * len(df)
+    df["Category"] = [amends_category(a, t) for a, t in zip(df["Amends"], titles)]
     summary = df.groupby("Quarter").agg(**{
         "Total Amendments": ("Quarter", "size"),
         "Majority": ("Majority", "sum"),

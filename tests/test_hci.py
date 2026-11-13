@@ -78,9 +78,10 @@ def test_en_bloc_nominations_are_not_legislation():
     various = rows[rows["Measure"] == "Various"]
     assert len(various) == 6
     assert set(various["Legislation Type"]) == {"Nomination"}
-    # The executive resolutions that authorize en bloc consideration stay Legislation (like S.Res.50
-    # in the published 116th Congress numbers).
-    assert set(rows.loc[rows["Measure"] == "S.Res.377", "Legislation Type"]) == {"Legislation"}
+    # The executive resolutions that authorize en bloc consideration count as nominations too
+    # (decided November 2026). S.Res.50 in 2019, a general change to nomination procedure, stays
+    # legislation, as published; test_cloture_reproduces_published_hci_numbers covers it.
+    assert set(rows.loc[rows["Measure"] == "S.Res.377", "Legislation Type"]) == {"Nomination"}
 
 
 def test_december_filing_voted_in_january():
@@ -129,6 +130,10 @@ def test_legislation_type():
     # A motion to proceed to a nomination is still a nomination: the original summaries grouped by Measure.
     assert ch.legislation_type("PN1181-7", "Judicial nominee Anna St. John, motion to proceed") == "Nomination"
     assert ch.legislation_type("Various", "En bloc consideration of certain nominations: A (PN25-28)") == "Nomination"
+    assert ch.legislation_type("S.Res.532", "Executive resolution authorizing the en bloc consideration of certain "
+                                            "nominations on the Executive Calendar") == "Nomination"
+    assert ch.legislation_type("S.Res.526", "Resolution withholding the pay of Senators if a Government shutdown "
+                                            "occurs, motion to proceed") == "Motion to Proceed"
     assert ch.legislation_type("H.R.4350", "National Defense Authorization Act") == "Legislation"
     assert ch.legislation_type("Treaty Doc. 117-3", "NATO accession") == "Legislation"
 
@@ -147,9 +152,10 @@ PUBLISHED_AMENDMENTS = {  # HCI full data tables; cumulative within a Congress e
     "Minority": [157, 169, 194, 229, 11, 27, 53, 81, 93, 99, 105, 121],
     "Bills Amended": [59, 79, 100, 145, 11, 31, 38, 52, 68, 80, 97, 133],
     "Amdts Amended": [79, 79, 99, 117, 0, 0, 33, 72, 73, 73, 73, 73],
-    # All three are amendments to non-budget concurrent resolutions (118th S.Con.Res.7 and S.Con.Res.43);
-    # the category only checks for "Con". See the README.
-    "Budget Resolutions": [0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1],
+    # Published as [0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1]: three amendments to concurrent resolutions that
+    # aren't budget resolutions (118th S.Con.Res.7 and S.Con.Res.43). Corrected in November 2026; they
+    # now count as Resolutions Amended. See the README.
+    "Budget Resolutions": [0] * 12,
 }
 
 
@@ -210,6 +216,7 @@ def test_api_row_matches_congress_gov_display():
                          "Record Vote Number: 148.",
         "url": "congress.gov/amendment/118th-congress/senate-amendment/1841",
         "Latest Action Date": "04/19/24",
+        "Measure Title": "Reforming Intelligence and Securing America Act",
     }
     classified = ah._add_classification(pd.DataFrame([row])).iloc[0]
     assert (classified["Sponsor Party"], classified["Outcome"], classified["Action Type"]) == ("D", "NA", "RCV")
@@ -220,15 +227,34 @@ def test_second_degree_amendment_names_both_amendments():
     row = ah.amendment_row(amendment("samdt_117_6569"), parents)
     assert row["Amends"] == "S.Amdt.6558 (which amends S.Amdt.6552)"
     assert row["Sponsor"] == "Braun, Mike [Sen.-R-IN]"
+    assert row["Measure Title"] == "Consolidated Appropriations Act, 2023"  # the bill underneath
 
 
 def test_treaty_amendment_is_labeled():
-    assert ah.amendment_row(amendment("samdt_117_5191"), {})["Amends"] == "Treaty Doc. 117-3"
+    row = ah.amendment_row(amendment("samdt_117_5191"), {})
+    assert row["Amends"] == "Treaty Doc. 117-3"
+    assert row["Measure Title"] == ""
+
+
+def test_quarterly_summary_needs_titles_only_for_concurrent_resolutions():
+    df = pd.DataFrame({"Congress": ["118th Congress (2023-2024)"], "S.Amdt.No": ["S.Amdt.1359"],
+                       "Sponsor": ["Cardin, Benjamin L. [Sen.-D-MD]"], "Amends": ["S.Con.Res.7"],
+                       "Latest Action Date": ["11/02/23"], "Action Type": ["UC"]})
+    with pytest.raises(ValueError, match="Measure Title"):
+        ah.quarterly_summary(df)
+    assert ah.quarterly_summary(df.assign(Amends="H.R.1")).loc["Bills Amended", "2023 Q4"] == 1
 
 
 def test_amends_categories_are_mutually_exclusive():
     assert ah.amends_category("S.Amdt.6558 (which amends S.Amdt.6552)") == "Amdts Amended"
-    assert ah.amends_category("S.Con.Res.14") == "Budget Resolutions"
+    budget = "A concurrent resolution setting forth the congressional budget for the United States Government for fiscal year 2022"
+    assert ah.amends_category("S.Con.Res.14", budget) == "Budget Resolutions"
+    assert ah.amends_category("H.Con.Res.14", "Establishing the congressional budget for the United States Government "
+                                              "for fiscal year 2025") == "Budget Resolutions"
+    # Only budget resolutions (decided November 2026); other concurrent resolutions are resolutions.
+    assert ah.amends_category("S.Con.Res.7", "A concurrent resolution condemning Russia's unjust and arbitrary "
+                                             "detention of Russian opposition leader Vladimir Kara-Murza") == "Resolutions Amended"
+    assert ah.amends_category("S.Con.Res.9", "A concurrent resolution honoring the Congressional Budget Office") == "Resolutions Amended"
     assert ah.amends_category("H.J.Res.100") == "Resolutions Amended"
     assert ah.amends_category("S.Res.805") == "Resolutions Amended"
     assert ah.amends_category("H.R.7888") == "Bills Amended"
