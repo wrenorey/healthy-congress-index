@@ -227,10 +227,22 @@ def test_second_degree_amendment_names_both_amendments():
     row = ah.amendment_row(amendment("samdt_117_6569"), parents)
     assert row["Amends"] == "S.Amdt.6558 (which amends S.Amdt.6552)"
     assert row["Sponsor"] == "Braun, Mike [Sen.-R-IN]"
+    assert row["Measure Title"] == "Consolidated Appropriations Act, 2023"  # the bill underneath
 
 
 def test_treaty_amendment_is_labeled():
-    assert ah.amendment_row(amendment("samdt_117_5191"), {})["Amends"] == "Treaty Doc. 117-3"
+    row = ah.amendment_row(amendment("samdt_117_5191"), {})
+    assert row["Amends"] == "Treaty Doc. 117-3"
+    assert row["Measure Title"] == ""
+
+
+def test_quarterly_summary_needs_titles_only_for_concurrent_resolutions():
+    df = pd.DataFrame({"Congress": ["118th Congress (2023-2024)"], "S.Amdt.No": ["S.Amdt.1359"],
+                       "Sponsor": ["Cardin, Benjamin L. [Sen.-D-MD]"], "Amends": ["S.Con.Res.7"],
+                       "Latest Action Date": ["11/02/23"], "Action Type": ["UC"]})
+    with pytest.raises(ValueError, match="Measure Title"):
+        ah.quarterly_summary(df)
+    assert ah.quarterly_summary(df.assign(Amends="H.R.1")).loc["Bills Amended", "2023 Q4"] == 1
 
 
 def test_amends_categories_are_mutually_exclusive():

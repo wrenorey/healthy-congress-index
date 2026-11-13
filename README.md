@@ -95,7 +95,7 @@ The methodology's worked example is a test in `tests/test_hci.py`: S.1 in the 11
 
 **To run:** Open `cloture/cloture.ipynb`, set `CONGRESSES`, and run all cells. It prints a line for anything unusual on the Senate's page. It writes two files and displays the cumulative rows used in the "Cloture Motion Activity" sheet:
 
-- `cloture_results_{congress}.csv` has one row per cloture motion, plus one row per reconsideration vote. Votes are the rows with Result `I` (invoked) or `F` (failed). `W` means withdrawn, `N` no vote, `V` vitiated, and blank pending.
+- `cloture_results_{congress}.csv` has one row per cloture motion, plus one row per reconsideration vote. Votes are the rows with Result `I` (invoked) or `F` (failed). `W` means withdrawn, `N` no action, `V` vitiated, and blank pending.
 - `cloture_summary_{congress}.csv` has per-quarter counts for each group.
 
 The Senate's page can lag the floor by several days, so rerun after a quarter closes.
