@@ -20,8 +20,9 @@ Deliberate changes from the original scripts:
   that contain commas, so it could type a reconsidered motion to proceed as Legislation.)
 - Date filters are inclusive. (The original dropped motions filed on the last day of a range.)
 - En bloc nominations, which the Senate has listed since 2025 with Measure "Various" and the PN numbers
-  in the Subject, count as Nominations. The executive resolutions (S.Res.) that authorize en bloc
-  consideration stay Legislation, as S.Res.50 did in the published 116th Congress numbers.
+  in the Subject, count as Nominations, and so do the executive resolutions (S.Res.) that authorize
+  en bloc consideration (decided November 2026). S.Res.50 in 2019, a general change to nomination
+  procedure, stays Legislation, as in the published 116th Congress numbers.
 - A recorded vote that the table lists without a result code gets its result from the official roll
   call (scrape_cloture prints each one it fills).
 """
@@ -43,6 +44,7 @@ COLUMNS = ["Date Filed", "Measure", "Legislation Type", "Subject", "Filed By",
 
 LEGISLATIVE_MEASURE = re.compile(r"^(H\.R\.|S\.|H\.J\.Res\.|H\.Res\.|H\.Con\.Res\.|Treaty Doc\.)")
 NOMINATION_IN_SUBJECT = re.compile(r"\bPN\d")
+EN_BLOC = re.compile(r"\ben bloc consideration\b", re.IGNORECASE)
 _SEP = ""  # private-use character standing in for <br>, so a cell can be split into its lines
 
 
@@ -86,6 +88,8 @@ def _vote_date(text, filed):
 
 def legislation_type(measure, subject):
     if "PN" in measure:  # even a motion to proceed to a nomination, as in the original summaries
+        return "Nomination"
+    if EN_BLOC.search(subject):  # en bloc nominations, and the S.Res. that authorize them
         return "Nomination"
     if not LEGISLATIVE_MEASURE.match(measure) and NOMINATION_IN_SUBJECT.search(subject):
         return "Nomination"  # en bloc nominations: Measure "Various", PN numbers in the Subject

@@ -38,11 +38,11 @@ The Congress.gov API's list of a Congress's amendments shows each one's latest a
 **Categories** are mutually exclusive and are checked in this order:
 
 - Amendments amended: what it amends contains S.Amdt.
-- Budget resolutions: contains Con
+- Budget resolutions: a concurrent resolution (Con) whose title, in the Measure Title column, sets forth or establishes the congressional budget
 - Resolutions amended: contains Res
 - Bills amended: everything else, including treaties
 
-Because the check is only for "Con," an amendment to any concurrent resolution counts as a budget resolution amendment. This has happened three times, all in the 118th Congress and all included in the published numbers: two amendments to S.Con.Res.7, on the detention of Vladimir Kara-Murza, and one to S.Con.Res.43, on Veterans of Foreign Wars of the United States Day. Every concurrent resolution amended so far in the 119th Congress is a budget resolution.
+Until November 2026, any concurrent resolution counted as a budget resolution. That put three 118th Congress amendments to other resolutions in the published budget resolution row: two to S.Con.Res.7, on the detention of Vladimir Kara-Murza, and one to S.Con.Res.43, on Veterans of Foreign Wars of the United States Day. They now count as resolutions amended, which corrects the published 118th numbers for Q4 2023 and Q4 2024.
 
 **Majority and minority** come from the sponsor's party and the party that controlled the Senate, which is listed by Congress in `SENATE_MAJORITY` in `amendments_helper.py`. Independents count with the party they caucus with (Democrats).
 
@@ -55,11 +55,11 @@ Because the check is only for "Con," an amendment to any concurrent resolution c
 5. `quarterly_summary` gives per-quarter counts for the "Senate Amendments Considered" sheet, and the notebook saves them as `amendments_summary_{start}_to_{end}.csv`. The sheet is cumulative within each Congress, except for the budget resolution row.
 6. At the start of each Congress, add it to `SENATE_MAJORITY`.
 
-**Reading the CSVs:** Use `pd.read_csv(path, keep_default_na=False)`. Otherwise, pandas reads the outcome code `NA` as a missing value. `Sponsor Party` is R or D and is blank for independents, as in the original scraper. `quarterly_summary` handles independents.
+**Reading the CSVs:** Use `pd.read_csv(path, keep_default_na=False)`. Otherwise, pandas reads the outcome code `NA` as a missing value. `Sponsor Party` is R or D and is blank for independents, as in the original scraper. `quarterly_summary` handles independents. `Measure Title` is the title of the bill or resolution underneath, also for an amendment to an amendment, and is blank for treaties.
 
 **Data files:**
 
-- `amendments_2022-01-01_to_2024-12-31.csv` covers the 117th Congress's second session and the 118th Congress, and reproduces the published table.
+- `amendments_2022-01-01_to_2024-12-31.csv` covers the 117th Congress's second session and the 118th Congress, and reproduces the published table, apart from the budget resolution correction.
 - `amendments_2025-01-01_to_2026-11-12.csv` is the 119th Congress through November 12, 2026.
 - Each has a matching `amendments_summary_...` file with its per-quarter counts.
 
@@ -76,7 +76,7 @@ Because the check is only for "Con," an amendment to any concurrent resolution c
 **Counting rules:**
 
 - **Groups.** A measure containing "PN" is a nomination, even when the subject says "motion to proceed," as in the original summaries. Otherwise, a row whose subject mentions "motion to proceed" is a motion to proceed, and everything else is legislation. The Legislation group includes motions to proceed and treaties.
-- **En bloc nominations.** Since 2025, the Senate has listed cloture on these with Measure "Various" and the PN numbers in the subject, and they count as nominations. The executive resolutions (S.Res.) that authorize en bloc consideration count as legislation, as S.Res.50 did in the published numbers for the 116th Congress.
+- **En bloc nominations.** Since 2025, the Senate has listed cloture on these with Measure "Various" and the PN numbers in the subject, and they count as nominations. Since November 2026, so do the executive resolutions (S.Res.) that authorize en bloc consideration. S.Res.50 in 2019, a general change to nomination procedure, stays legislation, as in the published numbers for the 116th Congress.
 - **Reconsidered motions** appear on one row of the Senate's table, with two vote dates, votes, and results. They are split into the original vote and a reconsideration vote.
 - **Motions filed** is the number of rows minus the number of reconsiderations.
 - **Votes** is votes invoked (result `I`) plus votes failed (result `F`), including reconsideration votes.
@@ -113,6 +113,6 @@ To check this work by hand, without running any code, follow the steps in [CHECK
 
 - For the 118th Congress, all 184 amendments match, and every field is identical.
 - For 2022 (the 117th Congress), all 165 amendments match. Every field is identical except for the three amendments to treaties, which the old scraper labeled "N/A."
-- Every published quarterly value for 2022 through 2024 is reproduced from `amendments_2022-01-01_to_2024-12-31.csv`, and this is pinned in the tests.
+- Every published quarterly value for 2022 through 2024 is reproduced from `amendments_2022-01-01_to_2024-12-31.csv`, and this is pinned in the tests. The exception is the November 2026 correction to the budget resolution row for Q4 2023 and Q4 2024, described under Categories.
 
 The October 2024 file (`amendments.csv`, now replaced) differed in only two places, both since corrected on Congress.gov or by the API: S.Amdt.1367 had a blank latest action, and S.Amdt.1841's action text was later edited.
